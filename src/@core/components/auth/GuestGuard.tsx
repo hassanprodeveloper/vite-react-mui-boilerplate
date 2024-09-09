@@ -1,5 +1,6 @@
 // ** React Imports
 import { ReactNode, ReactElement, useEffect } from "react";
+import authConfig from "src/configs/auth";
 
 // ** Hooks Import
 import { useAuth } from "src/hooks/useAuth";
@@ -16,7 +17,7 @@ const GuestGuard = (props: GuestGuardProps) => {
   const router = useRouter();
 
   useEffect(() => {
-    if (window.localStorage.getItem("userData")) {
+    if (window.localStorage.getItem(authConfig.userDataKeyName)) {
       router.replace("/");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

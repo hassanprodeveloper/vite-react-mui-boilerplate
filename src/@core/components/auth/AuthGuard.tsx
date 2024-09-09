@@ -1,5 +1,6 @@
 // ** React Imports
 import { ReactNode, ReactElement, useEffect } from "react";
+import authConfig from "src/configs/auth";
 
 // ** Hooks Import
 import { useAuth } from "src/hooks/useAuth";
@@ -17,15 +18,19 @@ const AuthGuard = (props: AuthGuardProps) => {
 
   console.log(
     "AuthGuard router, auth",
-    auth.user === null && !window.localStorage.getItem("userData"),
+    auth.user === null &&
+      !window.localStorage.getItem(authConfig.userDataKeyName),
     auth.user === null,
-    !window.localStorage.getItem("userData"),
+    !window.localStorage.getItem(authConfig.userDataKeyName),
     router
   );
 
   useEffect(
     () => {
-      if (auth.user === null && !window.localStorage.getItem("userData")) {
+      if (
+        auth.user === null &&
+        !window.localStorage.getItem(authConfig.userDataKeyName)
+      ) {
         if (router.asPath !== "/") {
           router.replace({
             pathname: "/login",

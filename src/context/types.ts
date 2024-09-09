@@ -1,3 +1,5 @@
+import { AdminUser } from "src/types/user";
+
 export type ErrCallbackType = (err: { [key: string]: string }) => void;
 
 export type LoginParams = {
@@ -6,21 +8,11 @@ export type LoginParams = {
   rememberMe?: boolean;
 };
 
-export type UserDataType = {
-  id: number;
-  role: string;
-  email: string;
-  fullName: string;
-  username: string;
-  password: string;
-  avatar?: string | null;
-};
-
 export type AuthValuesType = {
   loading: boolean;
   logout: () => void;
-  user: UserDataType | null;
+  user: AdminUser | null;
   setLoading: (value: boolean) => void;
-  setUser: (value: UserDataType | null) => void;
+  setUser: (value: AdminUser | null) => void;
   login: (params: LoginParams, errorCallback?: ErrCallbackType) => void;
 };

@@ -7,26 +7,17 @@ import mock from "src/@fake-db/mock";
 
 // ** Default AuthConfig
 import defaultAuthConfig from "src/configs/auth";
+import { AdminUser, UserRole } from "src/types/user";
 
 // ** Types
-import { UserDataType } from "src/context/types";
 
-const users: UserDataType[] = [
+const users: AdminUser[] = [
   {
     id: 1,
-    role: "admin",
-    password: "admin",
-    fullName: "John Doe",
-    username: "johndoe",
+    role: UserRole.admin,
+    name: "John Doe",
     email: "admin@materialize.com",
-  },
-  {
-    id: 2,
-    role: "client",
-    password: "client",
-    fullName: "Jane Doe",
-    username: "janedoe",
-    email: "client@materialize.com",
+    remember_token: null,
   },
 ];
 
@@ -40,13 +31,13 @@ const jwtConfig = {
 type ResponseType = [number, { [key: string]: any }];
 
 mock.onPost("/jwt/login").reply((request) => {
-  const { email, password } = JSON.parse(request.data);
+  const { email } = JSON.parse(request.data);
 
   let error = {
     email: ["Something went wrong"],
   };
 
-  const user = users.find((u) => u.email === email && u.password === password);
+  const user = users.find((u) => u.email === email);
 
   if (user) {
     const accessToken = jwt.sign({ id: user.id }, jwtConfig.secret as string, {
@@ -70,11 +61,9 @@ mock.onPost("/jwt/login").reply((request) => {
 
 mock.onPost("/jwt/register").reply((request) => {
   if (request.data.length > 0) {
-    const { email, password, username } = JSON.parse(request.data);
+    const { email, username } = JSON.parse(request.data);
     const isEmailAlreadyInUse = users.find((user) => user.email === email);
-    const isUsernameAlreadyInUse = users.find(
-      (user) => user.username === username
-    );
+    const isUsernameAlreadyInUse = users.find((user) => user.name === username);
     const error = {
       email: isEmailAlreadyInUse ? "This email is already in use." : null,
       username: isUsernameAlreadyInUse
@@ -88,14 +77,12 @@ mock.onPost("/jwt/register").reply((request) => {
       if (length) {
         lastIndex = users[length - 1].id;
       }
-      const userData = {
+      const userData: AdminUser = {
         id: lastIndex + 1,
         email,
-        password,
-        username,
-        avatar: null,
-        fullName: "",
-        role: "admin",
+        role: UserRole.admin,
+        name: "",
+        remember_token: null,
       };
 
       users.push(userData);
@@ -104,9 +91,6 @@ mock.onPost("/jwt/register").reply((request) => {
         { id: userData.id },
         jwtConfig.secret as string
       );
-
-      const user = { ...userData };
-      delete user.password;
 
       const response = { accessToken };
 
@@ -173,7 +157,7 @@ mock.onGet("/auth/me").reply((config) => {
 
       // ** Get user that matches id in token
       const userData = JSON.parse(
-        JSON.stringify(users.find((u: UserDataType) => u.id === userId))
+        JSON.stringify(users.find((u: AdminUser) => u.id === userId))
       );
 
       delete userData.password;

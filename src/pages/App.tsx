@@ -32,38 +32,42 @@ import LoginPage from "./login";
 import HomePage from "./home";
 import DashboardPage from "./dashboard";
 import Layout from "src/layouts";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const clientSideEmotionCache = createEmotionCache();
+
+const queryClient = new QueryClient();
 
 const App = () => {
   // const aclAbilities = defaultACLObj;
 
   return (
     <BrowserRouter>
-      <CacheProvider value={clientSideEmotionCache}>
-        <AuthProvider>
-          <SettingsProvider>
-            <SettingsConsumer>
-              {({ settings }) => {
-                return (
-                  <ThemeComponent settings={settings}>
-                    <Routes>
-                      <Route
-                        path="/"
-                        element={<Layout Component={HomePage} />}
-                      />
-                      <Route
-                        path="/login"
-                        element={<Layout Component={LoginPage} />}
-                      />
-                      ,
-                      <Route
-                        path="/dashboard"
-                        element={<Layout Component={DashboardPage} />}
-                      />
-                    </Routes>
+      <QueryClientProvider client={queryClient}>
+        <CacheProvider value={clientSideEmotionCache}>
+          <AuthProvider>
+            <SettingsProvider>
+              <SettingsConsumer>
+                {({ settings }) => {
+                  return (
+                    <ThemeComponent settings={settings}>
+                      <Routes>
+                        <Route
+                          path="/"
+                          element={<Layout Component={HomePage} />}
+                        />
+                        <Route
+                          path="/login"
+                          element={<Layout Component={LoginPage} />}
+                        />
+                        ,
+                        <Route
+                          path="/dashboard"
+                          element={<Layout Component={DashboardPage} />}
+                        />
+                      </Routes>
 
-                    {/* <Guard authGuard={authGuard} guestGuard={guestGuard}>
+                      {/* <Guard authGuard={authGuard} guestGuard={guestGuard}>
                       <AclGuard
                         aclAbilities={aclAbilities}
                         guestGuard={guestGuard}
@@ -73,19 +77,20 @@ const App = () => {
                       </AclGuard>
                     </Guard> */}
 
-                    <ReactHotToast>
-                      <Toaster
-                        position={settings.toastPosition}
-                        toastOptions={{ className: "react-hot-toast" }}
-                      />
-                    </ReactHotToast>
-                  </ThemeComponent>
-                );
-              }}
-            </SettingsConsumer>
-          </SettingsProvider>
-        </AuthProvider>
-      </CacheProvider>
+                      <ReactHotToast>
+                        <Toaster
+                          position={settings.toastPosition}
+                          toastOptions={{ className: "react-hot-toast" }}
+                        />
+                      </ReactHotToast>
+                    </ThemeComponent>
+                  );
+                }}
+              </SettingsConsumer>
+            </SettingsProvider>
+          </AuthProvider>
+        </CacheProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 };

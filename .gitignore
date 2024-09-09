@@ -47,3 +47,7 @@ yarn-error.log*
 
 # text fils
 tasks.txt
+
+
+# ENV
+.env

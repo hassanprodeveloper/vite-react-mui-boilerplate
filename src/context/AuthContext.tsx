@@ -8,12 +8,9 @@ import useRouter from "src/hooks/useRouter";
 import authConfig from "src/configs/auth";
 
 // ** Types
-import {
-  AuthValuesType,
-  LoginParams,
-  ErrCallbackType,
-  UserDataType,
-} from "./types";
+import { AuthValuesType, LoginParams, ErrCallbackType } from "./types";
+import login from "src/services/auth/login";
+import { AdminUser } from "src/types/user";
 
 // ** Defaults
 const defaultProvider: AuthValuesType = {
@@ -33,7 +30,7 @@ type Props = {
 
 const AuthProvider = ({ children }: Props) => {
   // ** States
-  const [user, setUser] = useState<UserDataType | null>(defaultProvider.user);
+  const [user, setUser] = useState<AdminUser | null>(defaultProvider.user);
   const [loading, setLoading] = useState<boolean>(defaultProvider.loading);
 
   // ** Hooks
@@ -41,10 +38,8 @@ const AuthProvider = ({ children }: Props) => {
 
   useEffect(() => {
     const initAuth = async (): Promise<void> => {
-      const storedToken = window.localStorage.getItem(
-        authConfig.storageTokenKeyName
-      )!;
-      const userData = window.localStorage.getItem("userData");
+      const storedToken = localStorage.getItem(authConfig.storageTokenKeyName)!;
+      const userData = localStorage.getItem(authConfig.userDataKeyName);
 
       if (!storedToken || !userData) {
         setLoading(false);
@@ -56,86 +51,51 @@ const AuthProvider = ({ children }: Props) => {
       setUser({ ...JSON.parse(userData) });
 
       setLoading(false);
-
-      // await axios
-      //   .get(authConfig.meEndpoint, {
-      //     headers: {
-      //       Authorization: storedToken,
-      //     },
-      //   })
-      //   .then(async (response) => {
-      //     setLoading(false);
-      //     setUser({ ...response.data.userData });
-      //   })
-      //   .catch(() => {
-      //     localStorage.removeItem("userData");
-      //     localStorage.removeItem("refreshToken");
-      //     localStorage.removeItem("accessToken");
-      //     setUser(null);
-      //     setLoading(false);
-      //     if (
-      //       authConfig.onTokenExpiration === "logout" &&
-      //       !router.pathname.includes("login")
-      //     ) {
-      //       router.replace("/login");
-      //     }
-      //   });
     };
 
     initAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleLogin = (
+  const handleLogin = async (
     params: LoginParams,
     errorCallback?: ErrCallbackType
   ) => {
-    // axios.post(authConfig.loginEndpoint, params)
-    new Promise((resolve) => resolve({}))
-      .then(async () => {
-        // .then(async (response) => {
-        const response = {
-          data: {
-            userData: {
-              id: 1,
-              role: "admin",
-              email: "admin@materialize.com",
-              fullName: "Admin",
-              username: "admin",
-              password: "1234",
-            },
-            accessToken: "token",
-          },
-        };
-        params.rememberMe
-          ? window.localStorage.setItem(
-              authConfig.storageTokenKeyName,
-              response.data.accessToken
-            )
-          : null;
-        const returnUrl = router.query.returnUrl;
+    try {
+      setLoading(true);
+      const response = await login(params);
 
-        setUser({ ...response.data.userData });
-        params.rememberMe
-          ? window.localStorage.setItem(
-              "userData",
-              JSON.stringify(response.data.userData)
-            )
-          : null;
+      if (!response.success) throw new Error(response.message);
 
-        const redirectURL = returnUrl && returnUrl !== "/" ? returnUrl : "/";
+      params.rememberMe
+        ? localStorage.setItem(authConfig.storageTokenKeyName, response.token)
+        : null;
+      const returnUrl = router.query.returnUrl;
 
-        router.replace(redirectURL as string);
-      })
-      .catch((err) => {
-        if (errorCallback) errorCallback(err);
-      });
+      const userData: AdminUser = { ...response.admin, role: response.role };
+
+      setUser(userData);
+      if (params.rememberMe) {
+        localStorage.setItem(
+          authConfig.userDataKeyName,
+          JSON.stringify(userData)
+        );
+        localStorage.setItem(authConfig.storageTokenKeyName, response.token);
+      }
+
+      const redirectURL = returnUrl && returnUrl !== "/" ? returnUrl : "/";
+
+      router.replace(redirectURL as string);
+    } catch (error: any) {
+      if (errorCallback) errorCallback(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = () => {
     setUser(null);
-    window.localStorage.removeItem("userData");
-    window.localStorage.removeItem(authConfig.storageTokenKeyName);
+    localStorage.removeItem(authConfig.userDataKeyName);
+    localStorage.removeItem(authConfig.storageTokenKeyName);
     router.push("/login");
   };
 

@@ -43,7 +43,7 @@ const UserDropdown = (props: Props) => {
 
   // ** Hooks
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   // ** Vars
   const { direction } = settings;
@@ -57,21 +57,6 @@ const UserDropdown = (props: Props) => {
       router.push(url);
     }
     setAnchorEl(null);
-  };
-
-  const styles = {
-    py: 2,
-    px: 4,
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-    color: "text.primary",
-    textDecoration: "none",
-    "& svg": {
-      mr: 2,
-      fontSize: "1.375rem",
-      color: "text.primary",
-    },
   };
 
   const handleLogout = () => {
@@ -136,54 +121,21 @@ const UserDropdown = (props: Props) => {
                 flexDirection: "column",
               }}
             >
-              <Typography sx={{ fontWeight: 600 }}>John Doe</Typography>
+              <Typography sx={{ fontWeight: 600 }}>{user?.name}</Typography>
               <Typography
                 variant="body2"
-                sx={{ fontSize: "0.8rem", color: "text.disabled" }}
+                sx={{
+                  fontSize: "0.8rem",
+                  color: "text.disabled",
+                  textTransform: "capitalize",
+                }}
               >
-                Admin
+                {user?.role?.replace("_", " ")}
               </Typography>
             </Box>
           </Box>
         </Box>
-        <Divider sx={{ mt: "0 !important" }} />
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
-          <Box sx={styles}>
-            <Icon icon="mdi:account-outline" />
-            Profile
-          </Box>
-        </MenuItem>
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
-          <Box sx={styles}>
-            <Icon icon="mdi:email-outline" />
-            Inbox
-          </Box>
-        </MenuItem>
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
-          <Box sx={styles}>
-            <Icon icon="mdi:message-outline" />
-            Chat
-          </Box>
-        </MenuItem>
-        <Divider />
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
-          <Box sx={styles}>
-            <Icon icon="mdi:cog-outline" />
-            Settings
-          </Box>
-        </MenuItem>
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
-          <Box sx={styles}>
-            <Icon icon="mdi:currency-usd" />
-            Pricing
-          </Box>
-        </MenuItem>
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose()}>
-          <Box sx={styles}>
-            <Icon icon="mdi:help-circle-outline" />
-            FAQ
-          </Box>
-        </MenuItem>
+
         <Divider />
         <MenuItem
           onClick={handleLogout}

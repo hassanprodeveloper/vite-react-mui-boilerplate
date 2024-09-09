@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 // ** React Imports
-import { ChangeEvent, ReactNode, useState } from "react";
+import { ReactNode, useState } from "react";
 
 // ** MUI Components
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
 import TextField from "@mui/material/TextField";
 import InputLabel from "@mui/material/InputLabel";
@@ -19,6 +17,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import MuiFormControlLabel, {
   FormControlLabelProps,
 } from "@mui/material/FormControlLabel";
+import LoadingButton from "@mui/lab/LoadingButton";
 
 // ** Icon Imports
 import Icon from "src/@core/components/icon";
@@ -34,10 +33,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 // ** Layout Import
 import BlankLayout from "src/@core/layouts/BlankLayout";
 import FooterIllustrationsV1 from "src/views/pages/auth/FooterIllustrationsV1";
-import { useMediaQuery, FormHelperText } from "@mui/material";
-import useBgColor from "src/@core/hooks/useBgColor";
-import { useSettings } from "src/@core/hooks/useSettings";
+import { FormHelperText } from "@mui/material";
 import { useAuth } from "src/hooks/useAuth";
+import { parseServerError } from "src/utils/utility";
 
 // ** Styled Components
 const Card = styled(MuiCard)<CardProps>(({ theme }) => ({
@@ -64,8 +62,8 @@ const schema = yup.object().shape({
 });
 
 const defaultValues = {
-  password: "admin",
-  email: "admin@materialize.com",
+  email: "litipij744@janfab.com",
+  password: "00000000",
 };
 
 const LoginV1 = () => {
@@ -75,9 +73,6 @@ const LoginV1 = () => {
   // ** Hooks
   const auth = useAuth();
   const theme = useTheme();
-  const bgColors = useBgColor();
-  const { settings } = useSettings();
-  const hidden = useMediaQuery(theme.breakpoints.down("md"));
 
   const {
     control,
@@ -92,10 +87,10 @@ const LoginV1 = () => {
 
   const onSubmit = (data: FormData) => {
     const { email, password } = data;
-    auth.login({ email, password, rememberMe }, () => {
+    auth.login({ email, password, rememberMe }, (error) => {
       setError("email", {
         type: "manual",
-        message: "Email or Password is invalid",
+        message: parseServerError(error, "Email or Password is invalid"),
       });
     });
   };
@@ -303,7 +298,8 @@ const LoginV1 = () => {
                 }
               />
             </Box>
-            <Button
+            <LoadingButton
+              loading={auth.loading}
               fullWidth
               size="large"
               type="submit"
@@ -311,7 +307,7 @@ const LoginV1 = () => {
               sx={{ mb: 7 }}
             >
               Login
-            </Button>
+            </LoadingButton>
           </form>
         </CardContent>
       </Card>
