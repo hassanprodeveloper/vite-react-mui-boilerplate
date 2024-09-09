@@ -28,27 +28,12 @@ import ThemeComponent from "src/@core/theme/ThemeComponent";
 import { createEmotionCache } from "src/@core/utils/create-emotion-cache";
 import { AuthProvider } from "src/context/AuthContext";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from ".";
 import LoginPage from "./login";
+import HomePage from "./home";
+import DashboardPage from "./dashboard";
+import Layout from "src/layouts";
 
 const clientSideEmotionCache = createEmotionCache();
-
-// ** Guard Props Type
-// type GuardProps = {
-//   authGuard: boolean;
-//   guestGuard: boolean;
-//   children: ReactNode;
-// };
-
-// const Guard = ({ children, authGuard, guestGuard }: GuardProps) => {
-//   if (guestGuard) {
-//     return <GuestGuard fallback={<h1>Guest</h1>}>{children}</GuestGuard>;
-//   } else if (!guestGuard && !authGuard) {
-//     return <>{children}</>;
-//   } else {
-//     return <AuthGuard fallback={<h1>Auth</h1>}>{children}</AuthGuard>;
-//   }
-// };
 
 const App = () => {
   // const aclAbilities = defaultACLObj;
@@ -63,19 +48,20 @@ const App = () => {
                 return (
                   <ThemeComponent settings={settings}>
                     <Routes>
-                      <Route path="/" element={<Home />} />
+                      <Route
+                        path="/"
+                        element={<Layout Component={HomePage} />}
+                      />
                       <Route
                         path="/login"
-                        element={
-                          <div>
-                            {typeof LoginPage.guestGuard}
-                            <LoginPage />
-                          </div>
-                        }
+                        element={<Layout Component={LoginPage} />}
+                      />
+                      ,
+                      <Route
+                        path="/dashboard"
+                        element={<Layout Component={DashboardPage} />}
                       />
                     </Routes>
-
-                    {/* <Routes /> */}
 
                     {/* <Guard authGuard={authGuard} guestGuard={guestGuard}>
                       <AclGuard

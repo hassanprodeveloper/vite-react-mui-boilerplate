@@ -4,9 +4,6 @@ import { createContext, useEffect, useState, ReactNode } from "react";
 // ** Next Import
 import useRouter from "src/hooks/useRouter";
 
-// ** Axios
-import axios from "axios";
-
 // ** Config
 import authConfig from "src/configs/auth";
 
@@ -47,34 +44,42 @@ const AuthProvider = ({ children }: Props) => {
       const storedToken = window.localStorage.getItem(
         authConfig.storageTokenKeyName
       )!;
-      if (storedToken) {
-        setLoading(true);
-        await axios
-          .get(authConfig.meEndpoint, {
-            headers: {
-              Authorization: storedToken,
-            },
-          })
-          .then(async (response) => {
-            setLoading(false);
-            setUser({ ...response.data.userData });
-          })
-          .catch(() => {
-            localStorage.removeItem("userData");
-            localStorage.removeItem("refreshToken");
-            localStorage.removeItem("accessToken");
-            setUser(null);
-            setLoading(false);
-            if (
-              authConfig.onTokenExpiration === "logout" &&
-              !router.pathname.includes("login")
-            ) {
-              router.replace("/login");
-            }
-          });
-      } else {
+      const userData = window.localStorage.getItem("userData");
+
+      if (!storedToken || !userData) {
         setLoading(false);
+        return;
       }
+
+      setLoading(true);
+
+      setUser({ ...JSON.parse(userData) });
+
+      setLoading(false);
+
+      // await axios
+      //   .get(authConfig.meEndpoint, {
+      //     headers: {
+      //       Authorization: storedToken,
+      //     },
+      //   })
+      //   .then(async (response) => {
+      //     setLoading(false);
+      //     setUser({ ...response.data.userData });
+      //   })
+      //   .catch(() => {
+      //     localStorage.removeItem("userData");
+      //     localStorage.removeItem("refreshToken");
+      //     localStorage.removeItem("accessToken");
+      //     setUser(null);
+      //     setLoading(false);
+      //     if (
+      //       authConfig.onTokenExpiration === "logout" &&
+      //       !router.pathname.includes("login")
+      //     ) {
+      //       router.replace("/login");
+      //     }
+      //   });
     };
 
     initAuth();

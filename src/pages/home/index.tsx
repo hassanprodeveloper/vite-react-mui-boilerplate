@@ -4,6 +4,8 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import CardHeader from "@mui/material/CardHeader";
 import CardContent from "@mui/material/CardContent";
+import BlankLayout from "src/@core/layouts/BlankLayout";
+import { ReactNode } from "react";
 
 const HomePage = () => {
   return (
@@ -43,3 +45,5 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+HomePage.getLayout = (page: ReactNode) => <BlankLayout>{page}</BlankLayout>;
