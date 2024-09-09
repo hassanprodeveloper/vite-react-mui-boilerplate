@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // ** React Imports
 import { ChangeEvent, ReactNode, useState } from "react";
 
@@ -25,14 +26,18 @@ import Icon from "src/@core/components/icon";
 // ** Configs
 import themeConfig from "src/configs/themeConfig";
 
+// ** Third Party Imports
+import * as yup from "yup";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+
 // ** Layout Import
 import BlankLayout from "src/@core/layouts/BlankLayout";
 import FooterIllustrationsV1 from "src/views/pages/auth/FooterIllustrationsV1";
-
-interface State {
-  password: string;
-  showPassword: boolean;
-}
+import { useMediaQuery, FormHelperText } from "@mui/material";
+import useBgColor from "src/@core/hooks/useBgColor";
+import { useSettings } from "src/@core/hooks/useSettings";
+import { useAuth } from "src/hooks/useAuth";
 
 // ** Styled Components
 const Card = styled(MuiCard)<CardProps>(({ theme }) => ({
@@ -48,23 +53,51 @@ const FormControlLabel = styled(MuiFormControlLabel)<FormControlLabelProps>(
   })
 );
 
+interface FormData {
+  email: string;
+  password: string;
+}
+
+const schema = yup.object().shape({
+  email: yup.string().email().required(),
+  password: yup.string().min(5).required(),
+});
+
+const defaultValues = {
+  password: "admin",
+  email: "admin@materialize.com",
+};
+
 const LoginV1 = () => {
-  // ** State
-  const [values, setValues] = useState<State>({
-    password: "",
-    showPassword: false,
+  const [rememberMe, setRememberMe] = useState<boolean>(true);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  // ** Hooks
+  const auth = useAuth();
+  const theme = useTheme();
+  const bgColors = useBgColor();
+  const { settings } = useSettings();
+  const hidden = useMediaQuery(theme.breakpoints.down("md"));
+
+  const {
+    control,
+    setError,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues,
+    mode: "onBlur",
+    resolver: yupResolver(schema),
   });
 
-  // ** Hook
-  const theme = useTheme();
-
-  const handleChange =
-    (prop: keyof State) => (event: ChangeEvent<HTMLInputElement>) => {
-      setValues({ ...values, [prop]: event.target.value });
-    };
-
-  const handleClickShowPassword = () => {
-    setValues({ ...values, showPassword: !values.showPassword });
+  const onSubmit = (data: FormData) => {
+    const { email, password } = data;
+    auth.login({ email, password, rememberMe }, () => {
+      setError("email", {
+        type: "manual",
+        message: "Email or Password is invalid",
+      });
+    });
   };
 
   return (
@@ -180,45 +213,76 @@ const LoginV1 = () => {
               Please sign-in to your account and start the adventure
             </Typography>
           </Box>
-          <form
-            noValidate
-            autoComplete="off"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <TextField
-              autoFocus
-              fullWidth
-              id="email"
-              label="Email"
-              sx={{ mb: 4 }}
-            />
-            <FormControl fullWidth>
-              <InputLabel htmlFor="auth-login-password">Password</InputLabel>
-              <OutlinedInput
-                label="Password"
-                value={values.password}
-                id="auth-login-password"
-                onChange={handleChange("password")}
-                type={values.showPassword ? "text" : "password"}
-                endAdornment={
-                  <InputAdornment position="end">
-                    <IconButton
-                      edge="end"
-                      onClick={handleClickShowPassword}
-                      onMouseDown={(e) => e.preventDefault()}
-                      aria-label="toggle password visibility"
-                    >
-                      <Icon
-                        icon={
-                          values.showPassword
-                            ? "mdi:eye-outline"
-                            : "mdi:eye-off-outline"
-                        }
-                      />
-                    </IconButton>
-                  </InputAdornment>
-                }
+          <form noValidate autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+            <FormControl fullWidth sx={{ mb: 4 }}>
+              <Controller
+                name="email"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { value, onChange, onBlur } }) => (
+                  <TextField
+                    autoFocus
+                    label="Email"
+                    value={value}
+                    onBlur={onBlur}
+                    onChange={onChange}
+                    error={Boolean(errors.email)}
+                    placeholder="admin@materialize.com"
+                  />
+                )}
               />
+              {errors.email && (
+                <FormHelperText sx={{ color: "error.main" }}>
+                  {errors.email.message}
+                </FormHelperText>
+              )}
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel
+                htmlFor="auth-login-v2-password"
+                error={Boolean(errors.password)}
+              >
+                Password
+              </InputLabel>
+              <Controller
+                name="password"
+                control={control}
+                rules={{ required: true }}
+                render={({ field: { value, onChange, onBlur } }) => (
+                  <OutlinedInput
+                    value={value}
+                    onBlur={onBlur}
+                    label="Password"
+                    onChange={onChange}
+                    id="auth-login-v2-password"
+                    error={Boolean(errors.password)}
+                    type={showPassword ? "text" : "password"}
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <IconButton
+                          edge="end"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          <Icon
+                            icon={
+                              showPassword
+                                ? "mdi:eye-outline"
+                                : "mdi:eye-off-outline"
+                            }
+                            fontSize={20}
+                          />
+                        </IconButton>
+                      </InputAdornment>
+                    }
+                  />
+                )}
+              />
+              {errors.password && (
+                <FormHelperText sx={{ color: "error.main" }} id="">
+                  {errors.password.message}
+                </FormHelperText>
+              )}
             </FormControl>
             <Box
               sx={{
@@ -231,10 +295,12 @@ const LoginV1 = () => {
             >
               <FormControlLabel
                 label="Remember Me"
-                control={<Checkbox />}
-                sx={{
-                  "& .MuiFormControlLabel-label": { color: "text.primary" },
-                }}
+                control={
+                  <Checkbox
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                }
               />
             </Box>
             <Button

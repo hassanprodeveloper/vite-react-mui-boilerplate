@@ -91,7 +91,7 @@ const AuthProvider = ({ children }: Props) => {
     errorCallback?: ErrCallbackType
   ) => {
     // axios.post(authConfig.loginEndpoint, params)
-    new Promise((resolve) => setTimeout(resolve, 1000))
+    new Promise((resolve) => resolve({}))
       .then(async () => {
         // .then(async (response) => {
         const response = {
