@@ -9,7 +9,7 @@ import { ReactNode } from "react";
 
 const HomePage = () => {
   return (
-    <Grid container spacing={6}>
+    <Grid container spacing={6} p={6}>
       <Grid item xs={12}>
         <Card>
           <CardHeader title="Kick start your project 🚀"></CardHeader>
