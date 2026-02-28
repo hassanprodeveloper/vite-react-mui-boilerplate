@@ -1,1 +1,1 @@
-# Meetakina Akina Admin
+# React Material UI Boilerplate (Vite)
